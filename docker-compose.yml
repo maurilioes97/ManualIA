@@ -1,0 +1,23 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: manualia-postgres
+    environment:
+      POSTGRES_DB: manualia
+      POSTGRES_USER: manualia
+      POSTGRES_PASSWORD: manualia123
+    ports:
+      - "5432:5432"
+    volumes:
+      - dados_postgres:/var/lib/postgresql/data
+
+  adminer:
+    image: adminer:latest
+    container_name: manualia-adminer
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+
+volumes:
+  dados_postgres:
