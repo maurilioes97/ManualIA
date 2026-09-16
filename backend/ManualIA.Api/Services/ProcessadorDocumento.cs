@@ -4,8 +4,6 @@ using UglyToad.PdfPig;
 
 namespace ManualIA.Api.Services;
 
-public record TrechoDocumento(string Texto, int? Pagina);
-
 public class ProcessadorDocumento
 {
     public List<TrechoDocumento> ExtrairTrechos(Stream arquivo, string extensao)

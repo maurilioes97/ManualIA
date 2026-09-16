@@ -13,7 +13,7 @@ Implementação acadêmica dos quatro casos de uso:
 - React com TypeScript e Vite
 - PostgreSQL e Adminer no Docker
 
-O backend foi mantido propositalmente pequeno. Os controllers usam o `AppDbContext` diretamente e existe apenas um serviço separado para processar documentos.
+O backend foi mantido propositalmente pequeno. Os controllers recebem as requisições e delegam as regras para serviços concretos, que acessam o `AppDbContext` diretamente. Não há interfaces ou camada de Repository.
 
 ## Como executar
 

@@ -16,6 +16,9 @@ builder.Services.AddDbContext<AppDbContext>(opcoes =>
     opcoes.UseNpgsql(builder.Configuration.GetConnectionString("Banco")));
 builder.Services.AddScoped<IPasswordHasher<Usuario>, PasswordHasher<Usuario>>();
 builder.Services.AddScoped<ProcessadorDocumento>();
+builder.Services.AddScoped<AutenticacaoService>();
+builder.Services.AddScoped<UsuarioService>();
+builder.Services.AddScoped<ManualService>();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(opcoes => opcoes.TokenValidationParameters = new TokenValidationParameters
     {
