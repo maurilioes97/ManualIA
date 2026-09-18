@@ -22,19 +22,38 @@ function App() {
     <>
       <header>
         <strong>Manual IA</strong>
-        <span>{sessao.usuario.nome} — {sessao.usuario.perfil}</span>
-        <button className="secundario" onClick={sair}>Sair</button>
+        <span>
+          {sessao.usuario.nome} — {sessao.usuario.perfil}
+        </span>
+        <button className="secundario" onClick={sair}>
+          Sair
+        </button>
       </header>
+
       {administrador ? (
         <main>
           <nav>
-            <button className={pagina === 'manuais' ? 'ativo' : ''} onClick={() => setPagina('manuais')}>Manuais</button>
-            <button className={pagina === 'usuarios' ? 'ativo' : ''} onClick={() => setPagina('usuarios')}>Usuários</button>
+            <button
+              className={pagina === 'manuais' ? 'ativo' : ''}
+              onClick={() => setPagina('manuais')}
+            >
+              Manuais
+            </button>
+            <button
+              className={pagina === 'usuarios' ? 'ativo' : ''}
+              onClick={() => setPagina('usuarios')}
+            >
+              Usuários
+            </button>
           </nav>
+
           {pagina === 'manuais' ? <Manuais /> : <Usuarios />}
         </main>
       ) : (
-        <main className="cartao"><h1>Bem-vindo</h1><p>Seu acesso de funcionário está ativo.</p></main>
+        <main className="cartao">
+          <h1>Bem-vindo</h1>
+          <p>Seu acesso de funcionário está ativo.</p>
+        </main>
       )}
     </>
   )

@@ -1,4 +1,4 @@
-using ManualIA.Api.Models;
+using ManualIA.Api.Models.Dtos;
 using ManualIA.Api.Services;
 using Microsoft.AspNetCore.Mvc;
 

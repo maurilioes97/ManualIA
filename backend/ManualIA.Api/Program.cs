@@ -1,6 +1,6 @@
 using System.Text;
 using ManualIA.Api.Data;
-using ManualIA.Api.Models;
+using ManualIA.Api.Models.Entities;
 using ManualIA.Api.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;

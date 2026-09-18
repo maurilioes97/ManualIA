@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace ManualIA.Api.Models;
+namespace ManualIA.Api.Models.Dtos;
 
 public record SalvarManualDto(
     [Required, MaxLength(150)] string Titulo,

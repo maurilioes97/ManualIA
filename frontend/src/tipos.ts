@@ -7,8 +7,15 @@ export type Usuario = {
   ativo: boolean
 }
 
-export type Perfil = { id: number; nome: string }
-export type Sessao = { token: string; usuario: Usuario }
+export type Perfil = {
+  id: number
+  nome: string
+}
+
+export type Sessao = {
+  token: string
+  usuario: Usuario
+}
 
 export type ArquivoManual = {
   nome: string

@@ -1,4 +1,4 @@
-using ManualIA.Api.Models;
+using ManualIA.Api.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace ManualIA.Api.Data;

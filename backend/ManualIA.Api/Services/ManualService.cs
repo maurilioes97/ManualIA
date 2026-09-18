@@ -1,5 +1,8 @@
 using ManualIA.Api.Data;
 using ManualIA.Api.Models;
+using ManualIA.Api.Models.Dtos;
+using ManualIA.Api.Models.Entities;
+using ManualIA.Api.Models.Processing;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 

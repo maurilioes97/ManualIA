@@ -1,4 +1,4 @@
-namespace ManualIA.Api.Models;
+namespace ManualIA.Api.Models.Dtos;
 
 public record ArquivoResposta(
     string Nome,

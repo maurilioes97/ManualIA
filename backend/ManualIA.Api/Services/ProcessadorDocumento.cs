@@ -1,5 +1,6 @@
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
+using ManualIA.Api.Models.Processing;
 using UglyToad.PdfPig;
 
 namespace ManualIA.Api.Services;

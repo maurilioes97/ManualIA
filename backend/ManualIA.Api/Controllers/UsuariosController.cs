@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using ManualIA.Api.Models;
+using ManualIA.Api.Models.Dtos;
 using ManualIA.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

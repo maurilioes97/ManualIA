@@ -1,4 +1,4 @@
-namespace ManualIA.Api.Services;
+namespace ManualIA.Api.Models;
 
 public class ResultadoServico<T>
 {

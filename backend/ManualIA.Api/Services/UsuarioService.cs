@@ -1,4 +1,6 @@
 using ManualIA.Api.Data;
+using ManualIA.Api.Models.Dtos;
+using ManualIA.Api.Models.Entities;
 using ManualIA.Api.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;

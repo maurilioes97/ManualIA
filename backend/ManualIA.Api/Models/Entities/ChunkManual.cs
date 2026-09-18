@@ -1,4 +1,4 @@
-namespace ManualIA.Api.Models;
+namespace ManualIA.Api.Models.Entities;
 
 public class ChunkManual
 {

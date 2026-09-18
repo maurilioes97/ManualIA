@@ -1,4 +1,5 @@
 using ManualIA.Api.Models;
+using ManualIA.Api.Models.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
