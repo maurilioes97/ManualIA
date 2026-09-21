@@ -129,6 +129,12 @@ export function Manuais() {
             onChange={e => setTitulo(e.target.value)}
             maxLength={150}
             required
+            onInvalid={e =>
+              e.currentTarget.setCustomValidity(
+                'Informe o título do manual.',
+              )
+            }
+            onInput={e => e.currentTarget.setCustomValidity('')}
           />
         </label>
 
@@ -139,6 +145,12 @@ export function Manuais() {
             onChange={e => setDescricao(e.target.value)}
             maxLength={1000}
             required
+            onInvalid={e =>
+              e.currentTarget.setCustomValidity(
+                'Informe a descrição do manual.',
+              )
+            }
+            onInput={e => e.currentTarget.setCustomValidity('')}
           />
         </label>
 
@@ -186,20 +198,27 @@ export function Manuais() {
             )}
 
             <div className="envio">
-              <input
-                type="file"
-                accept=".pdf,.docx"
-                onChange={e => {
-                  const arquivoSelecionado = e.target.files?.[0]
+              <label className="seletor-arquivo">
+                <span className="botao-arquivo">Escolher arquivo</span>
+                <span className="nome-arquivo">
+                  {arquivos[manual.id]?.name ?? 'Nenhum arquivo selecionado'}
+                </span>
+                <input
+                  key={`${manual.id}-${manual.arquivo?.enviadoEm ?? 'sem-arquivo'}`}
+                  type="file"
+                  accept=".pdf,.docx"
+                  onChange={e => {
+                    const arquivoSelecionado = e.target.files?.[0]
 
-                  if (arquivoSelecionado) {
-                    setArquivos({
-                      ...arquivos,
-                      [manual.id]: arquivoSelecionado,
-                    })
-                  }
-                }}
-              />
+                    if (arquivoSelecionado) {
+                      setArquivos({
+                        ...arquivos,
+                        [manual.id]: arquivoSelecionado,
+                      })
+                    }
+                  }}
+                />
+              </label>
               <button type="button" onClick={() => enviar(manual)}>
                 {manual.arquivo ? 'Substituir arquivo' : 'Enviar arquivo'}
               </button>

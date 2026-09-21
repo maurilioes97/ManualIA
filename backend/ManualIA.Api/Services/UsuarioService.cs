@@ -66,8 +66,21 @@ public class UsuarioService(AppDbContext banco, IPasswordHasher<Usuario> hasher)
         if (usuario is null)
             return ResultadoServico<bool>.ComErro("Usuário não encontrado.", 404);
 
-        usuario.Ativo = false;
+        await using var transacao = await banco.Database.BeginTransactionAsync();
+
+        await banco.Manuais
+            .Where(x => x.CadastradoPorId == id)
+            .ExecuteUpdateAsync(x => x.SetProperty(
+                manual => manual.CadastradoPorId, usuarioLogadoId));
+
+        await banco.Usuarios
+            .Where(x => x.CadastradoPorId == id)
+            .ExecuteUpdateAsync(x => x.SetProperty(
+                cadastrado => cadastrado.CadastradoPorId, usuarioLogadoId));
+
+        banco.Usuarios.Remove(usuario);
         await banco.SaveChangesAsync();
+        await transacao.CommitAsync();
         return ResultadoServico<bool>.ComSucesso(true);
     }
 

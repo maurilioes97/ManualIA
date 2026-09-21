@@ -47,7 +47,11 @@ function App() {
             </button>
           </nav>
 
-          {pagina === 'manuais' ? <Manuais /> : <Usuarios />}
+          {pagina === 'manuais' ? (
+            <Manuais />
+          ) : (
+            <Usuarios usuarioLogadoId={sessao.usuario.id} />
+          )}
         </main>
       ) : (
         <main className="cartao">

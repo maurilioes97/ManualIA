@@ -197,6 +197,45 @@ td {
   gap: 10px;
 }
 
+.seletor-arquivo {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid #9ca3af;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+}
+
+.seletor-arquivo:focus-within {
+  outline: 2px solid #2563eb;
+  outline-offset: 1px;
+}
+
+.seletor-arquivo input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.botao-arquivo {
+  flex: none;
+  padding: 10px 12px;
+  border-right: 1px solid #9ca3af;
+  background: #f3f4f6;
+}
+
+.nome-arquivo {
+  overflow: hidden;
+  padding: 10px;
+  color: #4b5563;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 @media (max-width: 650px) {
   header {
     flex-wrap: wrap;

@@ -15,7 +15,7 @@ const formularioVazio = {
   perfilId: 0,
 }
 
-export function Usuarios() {
+export function Usuarios({ usuarioLogadoId }: { usuarioLogadoId: number }) {
   const [usuarios, setUsuarios] = useState<Usuario[]>([])
   const [perfis, setPerfis] = useState<Perfil[]>([])
   const [formulario, setFormulario] = useState(formularioVazio)
@@ -108,14 +108,20 @@ export function Usuarios() {
   }
 
   async function excluir(usuario: Usuario) {
-    if (!confirm(`Excluir o usuário ${usuario.nome}?`)) return
+    if (
+      !confirm(
+        `Excluir permanentemente o usuário ${usuario.nome}? Esta ação não poderá ser desfeita.`,
+      )
+    ) {
+      return
+    }
 
     setErro('')
     setMensagem('')
 
     try {
       await excluirUsuario(usuario.id)
-      setMensagem('Usuário excluído.')
+      setMensagem('Usuário excluído permanentemente.')
       await carregar()
     } catch (e) {
       setErro((e as Error).message)
@@ -139,6 +145,12 @@ export function Usuarios() {
             onChange={e => alterar('nome', e.target.value)}
             maxLength={100}
             required
+            onInvalid={e =>
+              e.currentTarget.setCustomValidity(
+                'Informe o nome do usuário.',
+              )
+            }
+            onInput={e => e.currentTarget.setCustomValidity('')}
           />
         </label>
 
@@ -149,6 +161,14 @@ export function Usuarios() {
             value={formulario.email}
             onChange={e => alterar('email', e.target.value)}
             required
+            onInvalid={e =>
+              e.currentTarget.setCustomValidity(
+                e.currentTarget.validity.valueMissing
+                  ? 'Informe o e-mail do usuário.'
+                  : 'Informe um e-mail válido.',
+              )
+            }
+            onInput={e => e.currentTarget.setCustomValidity('')}
           />
         </label>
 
@@ -161,6 +181,14 @@ export function Usuarios() {
               onChange={e => alterar('senha', e.target.value)}
               minLength={6}
               required
+              onInvalid={e =>
+                e.currentTarget.setCustomValidity(
+                  e.currentTarget.validity.valueMissing
+                    ? 'Informe a senha inicial do usuário.'
+                    : 'A senha deve possuir pelo menos 6 caracteres.',
+                )
+              }
+              onInput={e => e.currentTarget.setCustomValidity('')}
             />
           </label>
         )}
@@ -171,6 +199,12 @@ export function Usuarios() {
             value={formulario.perfilId}
             onChange={e => alterar('perfilId', Number(e.target.value))}
             required
+            onInvalid={e =>
+              e.currentTarget.setCustomValidity(
+                'Selecione o perfil do usuário.',
+              )
+            }
+            onInput={e => e.currentTarget.setCustomValidity('')}
           >
             {perfis.map(perfil => (
               <option key={perfil.id} value={perfil.id}>
@@ -219,7 +253,12 @@ export function Usuarios() {
                   </button>
                   <button
                     className="perigo"
-                    disabled={!usuario.ativo}
+                    disabled={usuario.id === usuarioLogadoId}
+                    title={
+                      usuario.id === usuarioLogadoId
+                        ? 'Você não pode excluir a própria conta.'
+                        : undefined
+                    }
                     onClick={() => excluir(usuario)}
                   >
                     Excluir

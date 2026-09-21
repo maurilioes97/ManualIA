@@ -51,13 +51,44 @@ public class ManualService(
 
     public async Task<ResultadoServico<bool>> ExcluirManual(int id)
     {
-        var manual = await banco.Manuais.SingleOrDefaultAsync(x => x.Id == id && !x.Excluido);
+        var manual = await banco.Manuais
+            .Include(x => x.Arquivo)
+            .Include(x => x.Chunks)
+            .SingleOrDefaultAsync(x => x.Id == id && !x.Excluido);
         if (manual is null)
             return ResultadoServico<bool>.ComErro("Manual não encontrado.", 404);
 
-        manual.Excluido = true;
-        manual.AtualizadoEm = DateTime.UtcNow;
+        var caminhoArquivo = manual.Arquivo?.CaminhoArquivo;
+        await using var transacao = await banco.Database.BeginTransactionAsync();
+
+        banco.ChunksManuais.RemoveRange(manual.Chunks);
+        if (manual.Arquivo is not null)
+            banco.ArquivosManuais.Remove(manual.Arquivo);
+
+        banco.Manuais.Remove(manual);
         await banco.SaveChangesAsync();
+
+        if (!string.IsNullOrWhiteSpace(caminhoArquivo) && File.Exists(caminhoArquivo))
+        {
+            try
+            {
+                File.Delete(caminhoArquivo);
+            }
+            catch (IOException)
+            {
+                await transacao.RollbackAsync();
+                return ResultadoServico<bool>.ComErro(
+                    "Não foi possível excluir o arquivo do manual. Verifique se ele está aberto.", 500);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                await transacao.RollbackAsync();
+                return ResultadoServico<bool>.ComErro(
+                    "O sistema não possui permissão para excluir o arquivo do manual.", 500);
+            }
+        }
+
+        await transacao.CommitAsync();
         return ResultadoServico<bool>.ComSucesso(true);
     }
 
