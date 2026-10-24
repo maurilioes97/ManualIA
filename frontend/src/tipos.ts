@@ -33,3 +33,29 @@ export type Manual = {
   atualizadoEm: string
   arquivo: ArquivoManual | null
 }
+
+export type SessaoChat = {
+  id: number
+  manualId: number
+  manualTitulo: string
+  criadaEm: string
+}
+
+export type TrechoEncontrado = {
+  chunkId: number
+  ordem: number
+  pagina: number | null
+  texto: string
+}
+
+export type PerguntaProcessada = {
+  sessaoId: number
+  mensagemId: number
+  pergunta: string
+  enviadaEm: string
+  trechos: TrechoEncontrado[]
+  respostaId: number
+  resposta: string
+  geradaPorIA: boolean
+  motivo: string
+}

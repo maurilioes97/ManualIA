@@ -15,12 +15,47 @@ public class ManualService(
 {
     public const long TamanhoMaximo = 10 * 1024 * 1024;
 
-    public async Task<List<ManualResposta>> ListarManuais() => await banco.Manuais
-        .Where(x => !x.Excluido).OrderBy(x => x.Titulo)
-        .Select(x => new ManualResposta(x.Id, x.Titulo, x.Descricao, x.CriadoEm, x.AtualizadoEm,
-            x.Arquivo == null ? null : new ArquivoResposta(x.Arquivo.NomeOriginal, x.Arquivo.TipoArquivo,
-                x.Arquivo.TamanhoBytes, x.Arquivo.EnviadoEm, x.Arquivo.QuantidadeChunks)))
-        .ToListAsync();
+    public async Task<List<ManualResposta>> ListarManuais(
+        string? termo = null, bool somenteDisponiveis = false)
+    {
+        var consulta = banco.Manuais.Where(x => !x.Excluido);
+
+        if (somenteDisponiveis)
+            consulta = consulta.Where(x => x.Arquivo != null && x.Arquivo.QuantidadeChunks > 0);
+
+        if (!string.IsNullOrWhiteSpace(termo))
+        {
+            var padrao = $"%{termo.Trim()}%";
+            consulta = consulta.Where(x =>
+                EF.Functions.ILike(x.Titulo, padrao) ||
+                EF.Functions.ILike(x.Descricao, padrao));
+        }
+
+        return await consulta.OrderBy(x => x.Titulo)
+            .Select(x => new ManualResposta(x.Id, x.Titulo, x.Descricao, x.CriadoEm, x.AtualizadoEm,
+                x.Arquivo == null ? null : new ArquivoResposta(x.Arquivo.NomeOriginal, x.Arquivo.TipoArquivo,
+                    x.Arquivo.TamanhoBytes, x.Arquivo.EnviadoEm, x.Arquivo.QuantidadeChunks)))
+            .ToListAsync();
+    }
+
+    public async Task<ResultadoServico<ManualResposta>> ObterManual(
+        int id, bool somenteDisponiveis = false)
+    {
+        var consulta = banco.Manuais.Where(x => x.Id == id && !x.Excluido);
+
+        if (somenteDisponiveis)
+            consulta = consulta.Where(x => x.Arquivo != null && x.Arquivo.QuantidadeChunks > 0);
+
+        var manual = await consulta
+            .Select(x => new ManualResposta(x.Id, x.Titulo, x.Descricao, x.CriadoEm, x.AtualizadoEm,
+                x.Arquivo == null ? null : new ArquivoResposta(x.Arquivo.NomeOriginal, x.Arquivo.TipoArquivo,
+                    x.Arquivo.TamanhoBytes, x.Arquivo.EnviadoEm, x.Arquivo.QuantidadeChunks)))
+            .SingleOrDefaultAsync();
+
+        return manual is null
+            ? ResultadoServico<ManualResposta>.ComErro("Manual não encontrado ou indisponível para consulta.", 404)
+            : ResultadoServico<ManualResposta>.ComSucesso(manual);
+    }
 
     public async Task<ManualResposta> CadastrarManual(SalvarManualDto dados, int cadastradoPorId)
     {

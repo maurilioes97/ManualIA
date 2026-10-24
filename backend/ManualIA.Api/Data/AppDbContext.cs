@@ -10,6 +10,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> opcoes) : DbContext(opc
     public DbSet<Manual> Manuais => Set<Manual>();
     public DbSet<ArquivoManual> ArquivosManuais => Set<ArquivoManual>();
     public DbSet<ChunkManual> ChunksManuais => Set<ChunkManual>();
+    public DbSet<SessaoChat> SessoesChat => Set<SessaoChat>();
+    public DbSet<MensagemChat> MensagensChat => Set<MensagemChat>();
 
     protected override void OnModelCreating(ModelBuilder modelo)
     {
@@ -24,5 +26,15 @@ public class AppDbContext(DbContextOptions<AppDbContext> opcoes) : DbContext(opc
         modelo.Entity<Manual>().HasMany(x => x.Chunks).WithOne(x => x.Manual)
             .HasForeignKey(x => x.ManualId).OnDelete(DeleteBehavior.Cascade);
         modelo.Entity<ChunkManual>().HasIndex(x => new { x.ManualId, x.Ordem }).IsUnique();
+        modelo.Entity<SessaoChat>().HasOne(x => x.Usuario).WithMany(x => x.SessoesChat)
+            .HasForeignKey(x => x.UsuarioId).OnDelete(DeleteBehavior.Cascade);
+        modelo.Entity<SessaoChat>().HasOne(x => x.Manual).WithMany(x => x.SessoesChat)
+            .HasForeignKey(x => x.ManualId).OnDelete(DeleteBehavior.Cascade);
+        modelo.Entity<SessaoChat>().HasIndex(x => new { x.UsuarioId, x.AtualizadaEm });
+        modelo.Entity<MensagemChat>().HasOne(x => x.SessaoChat).WithMany(x => x.Mensagens)
+            .HasForeignKey(x => x.SessaoChatId).OnDelete(DeleteBehavior.Cascade);
+        modelo.Entity<MensagemChat>().Property(x => x.Papel).HasMaxLength(20);
+        modelo.Entity<MensagemChat>().Property(x => x.Conteudo).HasMaxLength(4000);
+        modelo.Entity<MensagemChat>().HasIndex(x => new { x.SessaoChatId, x.CriadaEm });
     }
 }

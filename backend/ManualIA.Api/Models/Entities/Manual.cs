@@ -11,4 +11,5 @@ public class Manual
     public bool Excluido { get; set; }
     public ArquivoManual? Arquivo { get; set; }
     public List<ChunkManual> Chunks { get; set; } = [];
+    public List<SessaoChat> SessoesChat { get; set; } = [];
 }

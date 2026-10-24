@@ -154,6 +154,11 @@ textarea {
   background: #dcfce7;
 }
 
+.aviso {
+  color: #854d0e;
+  background: #fef9c3;
+}
+
 .tabela {
   overflow-x: auto;
   background: white;
@@ -174,6 +179,106 @@ td {
 .lista {
   display: grid;
   gap: 14px;
+}
+
+.pesquisa-manuais {
+  margin: 20px 0;
+}
+
+.acoes-pesquisa {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.acoes-pesquisa input {
+  flex: 1;
+}
+
+.resumo-pesquisa {
+  color: #4b5563;
+}
+
+.detalhes-manual {
+  margin-top: 20px;
+  border-color: #93c5fd;
+}
+
+.detalhes-manual h2 {
+  margin-top: 0;
+}
+
+.cabecalho-chat {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.cabecalho-chat h1,
+.cabecalho-chat p {
+  margin-top: 0;
+}
+
+.historico-chat {
+  display: grid;
+  gap: 18px;
+  margin: 24px 0;
+}
+
+.historico-chat article {
+  display: grid;
+  gap: 10px;
+}
+
+.balao {
+  max-width: 82%;
+  padding: 14px;
+  border-radius: 10px;
+}
+
+.balao p {
+  margin-bottom: 0;
+}
+
+.texto-resposta,
+.pergunta-chat p {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.titulo-referencias {
+  font-size: 1rem;
+  margin: 20px 0 0;
+}
+
+.pergunta-chat {
+  justify-self: end;
+  color: white;
+  background: #2563eb;
+}
+
+.trechos-chat {
+  background: white;
+  border: 1px solid #d1d5db;
+}
+
+.trechos-chat blockquote {
+  margin: 12px 0 0;
+  padding-left: 12px;
+  border-left: 3px solid #93c5fd;
+  color: #374151;
+}
+
+.formulario-pergunta {
+  display: grid;
+  gap: 12px;
+  position: sticky;
+  bottom: 12px;
+}
+
+.formulario-pergunta button {
+  justify-self: end;
 }
 
 .titulo-acoes {
@@ -246,8 +351,14 @@ td {
   }
 
   .titulo-acoes,
-  .envio {
+  .envio,
+  .acoes-pesquisa,
+  .cabecalho-chat {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .balao {
+    max-width: 100%;
   }
 }

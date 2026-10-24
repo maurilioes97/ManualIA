@@ -9,13 +9,28 @@ namespace ManualIA.Api.Controllers;
 
 [ApiController]
 [Route("api/manuais")]
-[Authorize(Roles = Perfis.Administrador)]
+[Authorize]
 public class ManuaisController(ManualService manualService) : ControllerBase
 {
     [HttpGet]
-    public async Task<IActionResult> ListarManuais() => Ok(await manualService.ListarManuais());
+    public async Task<IActionResult> ListarManuais([FromQuery] string? termo = null)
+    {
+        var somenteDisponiveis = !User.IsInRole(Perfis.Administrador);
+        return Ok(await manualService.ListarManuais(termo, somenteDisponiveis));
+    }
+
+    [HttpGet("{id:int}")]
+    public async Task<IActionResult> ObterManual(int id)
+    {
+        var somenteDisponiveis = !User.IsInRole(Perfis.Administrador);
+        var resultado = await manualService.ObterManual(id, somenteDisponiveis);
+        return resultado.Sucesso
+            ? Ok(resultado.Dados)
+            : StatusCode(resultado.Status, new { mensagem = resultado.Erro });
+    }
 
     [HttpPost]
+    [Authorize(Roles = Perfis.Administrador)]
     public async Task<IActionResult> CadastrarManual(SalvarManualDto dados)
     {
         var manual = await manualService.CadastrarManual(dados, ObterUsuarioId());
@@ -23,6 +38,7 @@ public class ManuaisController(ManualService manualService) : ControllerBase
     }
 
     [HttpPut("{id:int}")]
+    [Authorize(Roles = Perfis.Administrador)]
     public async Task<IActionResult> EditarManual(int id, SalvarManualDto dados)
     {
         var resultado = await manualService.EditarManual(id, dados);
@@ -32,6 +48,7 @@ public class ManuaisController(ManualService manualService) : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
+    [Authorize(Roles = Perfis.Administrador)]
     public async Task<IActionResult> ExcluirManual(int id)
     {
         var resultado = await manualService.ExcluirManual(id);
@@ -41,6 +58,7 @@ public class ManuaisController(ManualService manualService) : ControllerBase
     }
 
     [HttpPost("{id:int}/arquivo")]
+    [Authorize(Roles = Perfis.Administrador)]
     [RequestSizeLimit(ManualService.TamanhoMaximo)]
     public async Task<IActionResult> EnviarArquivo(
         int id, IFormFile arquivo, [FromQuery] bool substituir = false)

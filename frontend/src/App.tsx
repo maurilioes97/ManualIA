@@ -4,6 +4,7 @@ import type { Sessao } from './tipos'
 import { Login } from './paginas/Login'
 import { Usuarios } from './paginas/Usuarios'
 import { Manuais } from './paginas/Manuais'
+import { ConsultaManuais } from './paginas/ConsultaManuais'
 
 function App() {
   const [sessao, setSessao] = useState<Sessao | null>(obterSessao())
@@ -54,9 +55,8 @@ function App() {
           )}
         </main>
       ) : (
-        <main className="cartao">
-          <h1>Bem-vindo</h1>
-          <p>Seu acesso de funcionário está ativo.</p>
+        <main>
+          <ConsultaManuais />
         </main>
       )}
     </>

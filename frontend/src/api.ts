@@ -1,4 +1,11 @@
-import type { Manual, Perfil, Sessao, Usuario } from './tipos'
+import type {
+  Manual,
+  Perfil,
+  PerguntaProcessada,
+  Sessao,
+  SessaoChat,
+  Usuario,
+} from './tipos'
 
 const URL = 'http://localhost:5080/api'
 
@@ -79,7 +86,26 @@ export const excluirUsuario = (id: number) =>
     method: 'DELETE',
   })
 
-export const listarManuais = () => requisitar<Manual[]>('/manuais')
+export const listarManuais = (termo = '') => {
+  const consulta = termo.trim()
+    ? `?termo=${encodeURIComponent(termo.trim())}`
+    : ''
+  return requisitar<Manual[]>(`/manuais${consulta}`)
+}
+
+export const obterManual = (id: number) =>
+  requisitar<Manual>(`/manuais/${id}`)
+
+export const abrirChat = (manualId: number) =>
+  requisitar<SessaoChat>(`/manuais/${manualId}/chats`, {
+    method: 'POST',
+  })
+
+export const enviarPergunta = (sessaoId: number, pergunta: string) =>
+  requisitar<PerguntaProcessada>(`/chats/${sessaoId}/perguntas`, {
+    method: 'POST',
+    body: JSON.stringify({ pergunta }),
+  })
 
 export const criarManual = (dados: object) =>
   requisitar<Manual>('/manuais', {

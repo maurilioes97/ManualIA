@@ -12,4 +12,5 @@ public class Usuario
     public int? CadastradoPorId { get; set; }
     public DateTime CriadoEm { get; set; } = DateTime.UtcNow;
     public bool Ativo { get; set; } = true;
+    public List<SessaoChat> SessoesChat { get; set; } = [];
 }
