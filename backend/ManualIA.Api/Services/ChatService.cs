@@ -19,6 +19,87 @@ public partial class ChatService(AppDbContext banco, ServicoIA servicoIA)
         "os", "ou", "para", "por", "qual", "quais", "que", "se", "sem", "um", "uma"
     };
 
+    public async Task<List<ConversaHistoricoResumoResposta>> ListarHistorico(int usuarioId)
+        => await banco.SessoesChat.AsNoTracking()
+            .Where(x => x.UsuarioId == usuarioId)
+            .OrderByDescending(x => x.AtualizadaEm)
+            .Select(x => new ConversaHistoricoResumoResposta(
+                x.Id,
+                x.ManualId,
+                x.Manual.Titulo,
+                x.CriadaEm,
+                x.AtualizadaEm,
+                x.Mensagens.Count,
+                x.Mensagens
+                    .Where(m => m.Papel == "Usuario")
+                    .OrderByDescending(m => m.CriadaEm)
+                    .Select(m => m.Conteudo)
+                    .FirstOrDefault()))
+            .ToListAsync();
+
+    public async Task<ResultadoServico<ConversaHistoricoResposta>> ObterHistorico(
+        int sessaoId, int usuarioId)
+    {
+        var sessao = await banco.SessoesChat.AsNoTracking()
+            .Include(x => x.Manual).ThenInclude(x => x.Arquivo)
+            .Include(x => x.Mensagens)
+            .SingleOrDefaultAsync(x => x.Id == sessaoId && x.UsuarioId == usuarioId);
+
+        if (sessao is null)
+            return ResultadoServico<ConversaHistoricoResposta>.ComErro(
+                "Conversa não encontrada.", 404);
+
+        var mensagens = sessao.Mensagens.OrderBy(x => x.CriadaEm).ThenBy(x => x.Id).ToList();
+        var interacoes = new List<PerguntaProcessadaResposta>();
+
+        for (var indice = 0; indice < mensagens.Count; indice++)
+        {
+            var pergunta = mensagens[indice];
+            if (pergunta.Papel != "Usuario") continue;
+
+            var resposta = mensagens.Skip(indice + 1)
+                .FirstOrDefault(x => x.Papel is "Assistente" or "Sistema");
+            if (resposta is null) continue;
+
+            var referencias = DesserializarReferencias(resposta.ReferenciasJson);
+            interacoes.Add(new PerguntaProcessadaResposta(
+                sessao.Id,
+                pergunta.Id,
+                pergunta.Conteudo,
+                pergunta.CriadaEm,
+                referencias.Trechos,
+                resposta.Id,
+                resposta.Conteudo,
+                referencias.GeradaPorIA,
+                referencias.Motivo));
+        }
+
+        var dadosSessao = new SessaoChatResposta(
+            sessao.Id,
+            sessao.ManualId,
+            sessao.Manual.Titulo,
+            sessao.Manual.Arquivo?.TipoArquivo ?? string.Empty,
+            sessao.CriadaEm);
+
+        return ResultadoServico<ConversaHistoricoResposta>.ComSucesso(
+            new ConversaHistoricoResposta(dadosSessao, interacoes));
+    }
+
+    public async Task<ResultadoServico<bool>> ExcluirConversa(int sessaoId, int usuarioId)
+    {
+        var sessao = await banco.SessoesChat
+            .Include(x => x.Mensagens)
+            .SingleOrDefaultAsync(x => x.Id == sessaoId && x.UsuarioId == usuarioId);
+
+        if (sessao is null)
+            return ResultadoServico<bool>.ComErro("Conversa não encontrada.", 404);
+
+        banco.MensagensChat.RemoveRange(sessao.Mensagens);
+        banco.SessoesChat.Remove(sessao);
+        await banco.SaveChangesAsync();
+        return ResultadoServico<bool>.ComSucesso(true);
+    }
+
     public async Task<ResultadoServico<SessaoChatResposta>> AbrirSessao(
         int manualId, int usuarioId)
     {
@@ -141,6 +222,26 @@ public partial class ChatService(AppDbContext banco, ServicoIA servicoIA)
 
         return resultado.ToString().Normalize(NormalizationForm.FormC);
     }
+
+    private static ReferenciasHistorico DesserializarReferencias(string? json)
+    {
+        if (string.IsNullOrWhiteSpace(json)) return new(false, "historico", []);
+
+        try
+        {
+            return JsonSerializer.Deserialize<ReferenciasHistorico>(json, JsonSerializerOptions.Web)
+                ?? new ReferenciasHistorico(false, "historico", []);
+        }
+        catch (JsonException)
+        {
+            return new ReferenciasHistorico(false, "historico", []);
+        }
+    }
+
+    private sealed record ReferenciasHistorico(
+        bool GeradaPorIA,
+        string Motivo,
+        List<TrechoEncontradoResposta> Trechos);
 
     [GeneratedRegex(@"[a-z0-9]+", RegexOptions.CultureInvariant)]
     private static partial Regex PalavraRegex();

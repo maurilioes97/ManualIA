@@ -1,4 +1,6 @@
 import type {
+  ConversaHistorico,
+  ConversaHistoricoResumo,
   Manual,
   Perfil,
   PerguntaProcessada,
@@ -129,6 +131,15 @@ export const enviarPergunta = (sessaoId: number, pergunta: string) =>
     method: 'POST',
     body: JSON.stringify({ pergunta }),
   })
+
+export const listarHistoricoConversas = () =>
+  requisitar<ConversaHistoricoResumo[]>('/chats')
+
+export const obterHistoricoConversa = (sessaoId: number) =>
+  requisitar<ConversaHistorico>(`/chats/${sessaoId}`)
+
+export const excluirConversaHistorico = (sessaoId: number) =>
+  requisitar<void>(`/chats/${sessaoId}`, { method: 'DELETE' })
 
 export const criarManual = (dados: object) =>
   requisitar<Manual>('/manuais', {

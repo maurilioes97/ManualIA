@@ -12,6 +12,28 @@ namespace ManualIA.Api.Controllers;
 [Authorize(Roles = Perfis.Funcionario)]
 public class ChatsController(ChatService chatService) : ControllerBase
 {
+    [HttpGet("chats")]
+    public async Task<IActionResult> ListarHistorico()
+        => Ok(await chatService.ListarHistorico(ObterUsuarioId()));
+
+    [HttpGet("chats/{sessaoId:int}")]
+    public async Task<IActionResult> ObterHistorico(int sessaoId)
+    {
+        var resultado = await chatService.ObterHistorico(sessaoId, ObterUsuarioId());
+        return resultado.Sucesso
+            ? Ok(resultado.Dados)
+            : StatusCode(resultado.Status, new { mensagem = resultado.Erro });
+    }
+
+    [HttpDelete("chats/{sessaoId:int}")]
+    public async Task<IActionResult> ExcluirConversa(int sessaoId)
+    {
+        var resultado = await chatService.ExcluirConversa(sessaoId, ObterUsuarioId());
+        return resultado.Sucesso
+            ? NoContent()
+            : StatusCode(resultado.Status, new { mensagem = resultado.Erro });
+    }
+
     [HttpPost("manuais/{manualId:int}/chats")]
     public async Task<IActionResult> AbrirChat(int manualId)
     {

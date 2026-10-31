@@ -5,16 +5,18 @@ import { Login } from './paginas/Login'
 import { Usuarios } from './paginas/Usuarios'
 import { Manuais } from './paginas/Manuais'
 import { ConsultaManuais } from './paginas/ConsultaManuais'
+import { HistoricoConversas } from './paginas/HistoricoConversas'
 
 function App() {
   const [sessao, setSessao] = useState<Sessao | null>(obterSessao())
-  const [pagina, setPagina] = useState<'usuarios' | 'manuais'>('manuais')
+  const [pagina, setPagina] = useState<'usuarios' | 'manuais' | 'historico'>('manuais')
 
   if (!sessao) return <Login aoEntrar={setSessao} />
 
   function sair() {
     limparSessao()
     setSessao(null)
+    setPagina('manuais')
   }
 
   const administrador = sessao.usuario.perfil === 'Administrador'
@@ -29,6 +31,22 @@ function App() {
             <small>Manuais inteligentes</small>
           </div>
         </div>
+        {!administrador && (
+          <nav className="navegacao-funcionario" aria-label="Navegação principal">
+            <button
+              className={pagina === 'manuais' ? 'ativo' : ''}
+              onClick={() => setPagina('manuais')}
+            >
+              Manuais
+            </button>
+            <button
+              className={pagina === 'historico' ? 'ativo' : ''}
+              onClick={() => setPagina('historico')}
+            >
+              Histórico
+            </button>
+          </nav>
+        )}
         <span className="usuario-logado">
           {sessao.usuario.nome} — {sessao.usuario.perfil}
         </span>
@@ -62,7 +80,7 @@ function App() {
         </main>
       ) : (
         <main>
-          <ConsultaManuais />
+          {pagina === 'historico' ? <HistoricoConversas /> : <ConsultaManuais />}
         </main>
       )}
     </>

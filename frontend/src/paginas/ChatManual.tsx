@@ -11,6 +11,7 @@ import type { Manual, PerguntaProcessada, SessaoChat } from '../tipos'
 
 type Propriedades = {
   sessao: SessaoChat
+  resultadosIniciais?: PerguntaProcessada[]
   manuais: Manual[]
   manualAbrindoChat: number | null
   aoAbrirChat: (manualId: number) => Promise<void>
@@ -20,12 +21,14 @@ type Propriedades = {
 function TextoGradual({
   texto,
   aoAtualizar,
+  animar = true,
 }: {
   texto: string
   aoAtualizar: () => void
+  animar?: boolean
 }) {
   const palavras = useMemo(() => texto.match(/\S+\s*/g) ?? [texto], [texto])
-  const reduzirMovimento = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  const reduzirMovimento = !animar || window.matchMedia('(prefers-reduced-motion: reduce)').matches
   const [quantidadeVisivel, setQuantidadeVisivel] = useState(
     reduzirMovimento ? palavras.length : 0,
   )
@@ -64,19 +67,23 @@ function TextoGradual({
 
 export function ChatManual({
   sessao,
+  resultadosIniciais = [],
   manuais,
   manualAbrindoChat,
   aoAbrirChat,
   aoFechar,
 }: Propriedades) {
   const [pergunta, setPergunta] = useState('')
-  const [resultados, setResultados] = useState<PerguntaProcessada[]>([])
+  const [resultados, setResultados] = useState<PerguntaProcessada[]>(resultadosIniciais)
   const [paginasVisiveis, setPaginasVisiveis] = useState<Set<number>>(new Set())
   const [enviando, setEnviando] = useState(false)
   const [abrindoManual, setAbrindoManual] = useState(false)
   const [manualAberto, setManualAberto] = useState(false)
   const [urlManual, setUrlManual] = useState('')
   const [erro, setErro] = useState('')
+  const [respostasHistoricas] = useState(
+    () => new Set(resultadosIniciais.map(resultado => resultado.respostaId)),
+  )
   const fimDoChat = useRef<HTMLDivElement>(null)
   const campoPergunta = useRef<HTMLTextAreaElement>(null)
 
@@ -253,6 +260,7 @@ export function ChatManual({
               </div>
               <TextoGradual
                 texto={resultado.resposta}
+                animar={!respostasHistoricas.has(resultado.respostaId)}
                 aoAtualizar={() => fimDoChat.current?.scrollIntoView({ block: 'end' })}
               />
               {resultado.trechos.length > 0 && (

@@ -1,6 +1,6 @@
 # Manual IA — versão simples
 
-Implementação acadêmica dos casos de uso CDU01 a CDU07:
+Implementação acadêmica dos casos de uso CDU01 a CDU08:
 
 1. Fazer login.
 2. Gerenciar usuários.
@@ -8,7 +8,8 @@ Implementação acadêmica dos casos de uso CDU01 a CDU07:
 4. Enviar PDF ou DOCX e salvar os trechos extraídos.
 5. Pesquisar manuais disponíveis para consulta.
 6. Abrir um chat do manual e registrar perguntas.
-7. Gerar respostas com Gemini e apresentar referências. A tela de histórico (CDU08) ainda não foi implementada.
+7. Gerar respostas com Gemini e apresentar referências.
+8. Consultar o histórico de conversas e continuar um chat anterior.
 
 ## Tecnologias
 
@@ -116,6 +117,9 @@ O backend envia somente a pergunta e até cinco trechos relevantes ao Gemini. A 
 sem embeddings; perguntas que usem apenas sinônimos podem não localizar o conteúdo.
 Perguntas e respostas são salvas juntas, incluindo uma cópia dos trechos citados.
 As chamadas não enviam mensagens anteriores da conversa, conforme CDU07/RN03.
+
+O funcionário pode abrir **Histórico** no cabeçalho para consultar somente as próprias conversas,
+visualizar perguntas e respostas anteriores e continuar o chat vinculado ao mesmo manual.
 
 Sem fontes, sem chave, com HTTP 429, falha de rede, timeout, recusa ou saída inválida,
 o chat mostra um aviso do sistema e os trechos disponíveis. Não há novas tentativas automáticas.

@@ -161,6 +161,16 @@ if (args.Contains("--banco"))
     Verificar(mensagens.Count == 2 && mensagens.Any(x => x.Papel == "Usuario") &&
         mensagens.Any(x => x.Id == pergunta.Dados!.RespostaId && x.ReferenciasJson!.Contains("Desligue")),
         "Pergunta, resposta e snapshot persistidos no PostgreSQL");
+    var listaHistorico = await chat.ListarHistorico(usuario.Id);
+    Verificar(listaHistorico.Any(x => x.Id == abertura.Dados.Id && x.ManualId == manual.Id &&
+        x.QuantidadeMensagens == 2), "CDU08 lista conversas do usuário vinculadas ao manual");
+    var detalheHistorico = await chat.ObterHistorico(abertura.Dados.Id, usuario.Id);
+    Verificar(detalheHistorico.Sucesso && detalheHistorico.Dados!.Interacoes.Count == 1 &&
+        detalheHistorico.Dados.Interacoes[0].Pergunta == "Como fazer manutenção?" &&
+        detalheHistorico.Dados.Interacoes[0].Trechos.Count == 1,
+        "CDU08 reconstrói perguntas, respostas e referências da conversa");
+    Verificar((await chat.ObterHistorico(abertura.Dados.Id, -1)).Status == 404,
+        "CDU08 impede acesso ao histórico de outro usuário");
     chamadas = handler.Chamadas;
     Verificar((await chat.EnviarPergunta(abertura.Dados.Id, -1, "manutenção")).Status == 404, "Bloqueia conversa de outro usuário");
     Verificar((await chat.EnviarPergunta(abertura.Dados.Id, usuario.Id, " ")).Status == 400, "Bloqueia pergunta vazia");
@@ -176,6 +186,12 @@ if (args.Contains("--banco"))
     await banco.SaveChangesAsync();
     Verificar((await chat.EnviarPergunta(abertura.Dados.Id, usuario.Id, "manutenção")).Status == 409,
         "Manual indisponível bloqueia pergunta");
+    Verificar((await chat.ExcluirConversa(abertura.Dados.Id, -1)).Status == 404,
+        "CDU08 impede exclusão de conversa de outro usuário");
+    Verificar((await chat.ExcluirConversa(abertura.Dados.Id, usuario.Id)).Sucesso &&
+        !await banco.SessoesChat.AnyAsync(x => x.Id == abertura.Dados.Id) &&
+        !await banco.MensagensChat.AnyAsync(x => x.SessaoChatId == abertura.Dados.Id),
+        "CDU08 exclui a conversa própria e suas mensagens");
     await transacao.RollbackAsync();
     Console.WriteLine("Fixtures de banco revertidas por rollback.");
 }

@@ -60,3 +60,18 @@ export type PerguntaProcessada = {
   geradaPorIA: boolean
   motivo: string
 }
+
+export type ConversaHistoricoResumo = {
+  id: number
+  manualId: number
+  manualTitulo: string
+  criadaEm: string
+  atualizadaEm: string
+  quantidadeMensagens: number
+  ultimaPergunta: string | null
+}
+
+export type ConversaHistorico = {
+  sessao: SessaoChat
+  interacoes: PerguntaProcessada[]
+}
