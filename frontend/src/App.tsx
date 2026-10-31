@@ -22,8 +22,14 @@ function App() {
   return (
     <>
       <header>
-        <strong>Manual IA</strong>
-        <span>
+        <div className="marca">
+          <img src="/simpatica-avatar.png" alt="" />
+          <div>
+            <strong>Simpática</strong>
+            <small>Manuais inteligentes</small>
+          </div>
+        </div>
+        <span className="usuario-logado">
           {sessao.usuario.nome} — {sessao.usuario.perfil}
         </span>
         <button className="secundario" onClick={sair}>
@@ -32,7 +38,7 @@ function App() {
       </header>
 
       {administrador ? (
-        <main>
+        <main className="area-administrativa">
           <nav>
             <button
               className={pagina === 'manuais' ? 'ativo' : ''}

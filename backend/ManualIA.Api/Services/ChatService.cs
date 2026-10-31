@@ -25,7 +25,7 @@ public partial class ChatService(AppDbContext banco, ServicoIA servicoIA)
         var manual = await banco.Manuais
             .Where(x => x.Id == manualId && !x.Excluido &&
                 x.Arquivo != null && x.Arquivo.QuantidadeChunks > 0)
-            .Select(x => new { x.Id, x.Titulo })
+            .Select(x => new { x.Id, x.Titulo, x.Arquivo!.TipoArquivo })
             .SingleOrDefaultAsync();
 
         if (manual is null)
@@ -42,7 +42,7 @@ public partial class ChatService(AppDbContext banco, ServicoIA servicoIA)
         await banco.SaveChangesAsync();
 
         return ResultadoServico<SessaoChatResposta>.ComSucesso(new SessaoChatResposta(
-            sessao.Id, manual.Id, manual.Titulo, sessao.CriadaEm));
+            sessao.Id, manual.Id, manual.Titulo, manual.TipoArquivo, sessao.CriadaEm));
     }
 
     public async Task<ResultadoServico<PerguntaProcessadaResposta>> EnviarPergunta(

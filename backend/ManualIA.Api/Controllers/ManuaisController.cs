@@ -29,6 +29,20 @@ public class ManuaisController(ManualService manualService) : ControllerBase
             : StatusCode(resultado.Status, new { mensagem = resultado.Erro });
     }
 
+    [HttpGet("{id:int}/arquivo/visualizacao")]
+    public async Task<IActionResult> VisualizarArquivo(int id)
+    {
+        var somenteDisponiveis = !User.IsInRole(Perfis.Administrador);
+        var resultado = await manualService.ObterArquivoParaVisualizacao(id, somenteDisponiveis);
+        if (!resultado.Sucesso)
+            return StatusCode(resultado.Status, new { mensagem = resultado.Erro });
+
+        var arquivo = resultado.Dados!;
+        var stream = new FileStream(
+            arquivo.Caminho, FileMode.Open, FileAccess.Read, FileShare.Read);
+        return File(stream, "application/pdf", enableRangeProcessing: true);
+    }
+
     [HttpPost]
     [Authorize(Roles = Perfis.Administrador)]
     public async Task<IActionResult> CadastrarManual(SalvarManualDto dados)

@@ -24,8 +24,22 @@ export function Login({ aoEntrar }: { aoEntrar: (sessao: Sessao) => void }) {
 
   return (
     <main className="login">
-      <form className="cartao" onSubmit={enviar}>
-        <h1>Manual IA</h1>
+      <div className="vagalumes" aria-hidden="true">
+        {Array.from({ length: 28 }, (_, indice) => <span key={indice} />)}
+      </div>
+      <div className="login-card-container">
+        <div className="ornamento-raizes" aria-hidden="true">
+          <img src="/ornamento-login-botanico.png" alt="" />
+        </div>
+      <form className="cartao login-formulario" onSubmit={enviar}>
+        <div className="login-marca">
+          <span className="marca-coracao">♥</span>
+          <div>
+            <strong>Simpática</strong>
+            <small>Manuais inteligentes</small>
+          </div>
+        </div>
+        <h2>Que bom ter você aqui</h2>
         <p>Entre para acessar o sistema.</p>
 
         {erro && <div className="mensagem erro">{erro}</div>}
@@ -62,6 +76,7 @@ export function Login({ aoEntrar }: { aoEntrar: (sessao: Sessao) => void }) {
           {carregando ? 'Entrando...' : 'Entrar'}
         </button>
       </form>
+      </div>
     </main>
   )
 }

@@ -4,4 +4,5 @@
 **/dist/
 backend/ManualIA.Api/storage/
 .env
+backend/ManualIA.Api/appsettings.Local.json
 .vscode/

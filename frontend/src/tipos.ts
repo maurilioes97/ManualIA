@@ -38,6 +38,7 @@ export type SessaoChat = {
   id: number
   manualId: number
   manualTitulo: string
+  manualTipoArquivo: string
   criadaEm: string
 }
 

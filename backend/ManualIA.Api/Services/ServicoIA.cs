@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using ManualIA.Api.Models.Dtos;
 
 namespace ManualIA.Api.Services;
@@ -15,13 +16,19 @@ public class ServicoIA(HttpClient http, IConfiguration configuracao, ILogger<Ser
         Não use conhecimento externo nem invente procedimentos, fatos ou referências.
         Se os trechos não sustentarem a resposta, retorne podeResponder=false, resposta vazia e
         referencias vazias. Caso contrário, escreva uma resposta concisa em texto simples, com
-        no máximo 3000 caracteres. Cite as fontes no formato [Trecho ID] e inclua em referencias
-        apenas os chunkId efetivamente usados. Não afirme que executou ações.
+        no máximo 3000 caracteres. Não escreva IDs, números de chunks ou citações entre colchetes
+        no texto da resposta. Inclua apenas no campo referencias os chunkId efetivamente usados.
+        Não afirme que executou ações nem se apresente como uma pessoa mencionada no manual.
         """;
 
     public async Task<ResultadoIA> GerarResposta(string pergunta,
         List<TrechoEncontradoResposta> trechos, CancellationToken cancelamento = default)
     {
+        if (EhSaudacao(pergunta))
+            return new ResultadoIA(
+                "Olá! Eu sou a Simpática. Como posso ajudar com este manual?",
+                true, "saudacao", []);
+
         if (trechos.Count == 0)
             return Alternativa("Não localizei informações suficientes no manual selecionado. Tente uma pergunta mais específica.",
                 "sem_trechos", trechos);
@@ -30,7 +37,7 @@ public class ServicoIA(HttpClient http, IConfiguration configuracao, ILogger<Ser
         if (string.IsNullOrWhiteSpace(chave))
         {
             logger.LogWarning("GEMINI_API_KEY não configurada; exibindo trechos do manual.");
-            return Alternativa("A geração de respostas está indisponível. Consulte os trechos encontrados abaixo.",
+            return Alternativa("A geração de respostas está indisponível. Consulte as páginas indicadas abaixo.",
                 "nao_configurada", trechos);
         }
 
@@ -78,11 +85,11 @@ public class ServicoIA(HttpClient http, IConfiguration configuracao, ILogger<Ser
                 if (retorno.StatusCode == HttpStatusCode.NotFound)
                 {
                     logger.LogWarning("Confira Gemini:Modelo e a disponibilidade do modelo no projeto Google AI Studio.");
-                    return Alternativa("O modelo de IA configurado não foi encontrado ou não está disponível para este projeto. Avise o administrador e consulte os trechos abaixo.",
+                    return Alternativa("O modelo de IA configurado não foi encontrado ou não está disponível para este projeto. Avise o administrador e consulte as páginas indicadas abaixo.",
                         "modelo_indisponivel", trechos);
                 }
                 return retorno.StatusCode == HttpStatusCode.TooManyRequests
-                    ? Alternativa("O limite de uso da IA foi atingido. Tente mais tarde ou consulte os trechos abaixo.", "limite_atingido", trechos)
+                    ? Alternativa("O limite de uso da IA foi atingido. Tente mais tarde ou consulte as páginas indicadas abaixo.", "limite_atingido", trechos)
                     : Falha(trechos);
             }
 
@@ -108,7 +115,10 @@ public class ServicoIA(HttpClient http, IConfiguration configuracao, ILogger<Ser
                 resposta.Referencias.Any(id => trechos.All(t => t.ChunkId != id)))
                 return SemResposta(trechos);
 
-            return new ResultadoIA(resposta.Resposta.Trim(), true, "gerada",
+            var conteudo = RemoverCitacoesDeTrechos(resposta.Resposta);
+            if (string.IsNullOrWhiteSpace(conteudo)) return SemResposta(trechos);
+
+            return new ResultadoIA(conteudo, true, "gerada",
                 trechos.Where(t => resposta.Referencias.Contains(t.ChunkId)).ToList());
         }
         catch (OperationCanceledException) when (!cancelamento.IsCancellationRequested)
@@ -128,11 +138,26 @@ public class ServicoIA(HttpClient http, IConfiguration configuracao, ILogger<Ser
     private static ResultadoIA Alternativa(string texto, string motivo, List<TrechoEncontradoResposta> trechos)
         => new(texto, false, motivo, trechos);
 
+    private static bool EhSaudacao(string pergunta) => Regex.IsMatch(
+        pergunta.Trim(),
+        @"^(oi|ol[aá]|bom dia|boa tarde|boa noite)(,?\s+tudo bem)?[!?.,\s]*$",
+        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+
+    private static string RemoverCitacoesDeTrechos(string resposta)
+    {
+        var semCitacoes = Regex.Replace(
+            resposta,
+            @"\s*\[(?:Trechos?\s+)?\d+(?:(?:\s*,\s*|\s+e\s+)(?:Trechos?\s+)?\d+)*\]",
+            "",
+            RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+        return Regex.Replace(semCitacoes, @"[ \t]{2,}", " ").Trim();
+    }
+
     private static ResultadoIA Falha(List<TrechoEncontradoResposta> trechos) => Alternativa(
-        "Não foi possível gerar a resposta no momento. Consulte os trechos encontrados abaixo.", "falha_ia", trechos);
+        "Não foi possível gerar a resposta no momento. Consulte as páginas indicadas abaixo.", "falha_ia", trechos);
 
     private static ResultadoIA SemResposta(List<TrechoEncontradoResposta> trechos) => Alternativa(
-        "Não foi possível formular uma resposta com segurança a partir desses trechos. Consulte as referências ou reformule a pergunta.",
+        "Não foi possível formular uma resposta com segurança a partir dessas fontes. Consulte as páginas indicadas ou reformule a pergunta.",
         "sem_resposta_segura", trechos);
 
     private sealed class RespostaModelo

@@ -60,6 +60,14 @@ handler.Responder = async (pedido, _) =>
 var resultado = await servico.GerarResposta("Como fazer manutenção?", trechos);
 Verificar(resultado.GeradaPorIA && resultado.Trechos.Count == 1 && resultado.Trechos[0].ChunkId == 10,
     "Resposta válida usa apenas as referências selecionadas");
+Verificar(resultado.Conteudo == "Desligue o motor.",
+    "Referência numérica não aparece no texto da resposta");
+
+var chamadasAntesSaudacao = handler.Chamadas;
+resultado = await servico.GerarResposta("Olá!", trechos);
+Verificar(resultado.GeradaPorIA && resultado.Motivo == "saudacao" && resultado.Trechos.Count == 0 &&
+    resultado.Conteudo.Contains("Simpática") && handler.Chamadas == chamadasAntesSaudacao,
+    "Saudação recebe resposta local sem consumir API");
 
 handler.Responder = (pedido, _) =>
 {

@@ -129,7 +129,7 @@ export function Usuarios({ usuarioLogadoId }: { usuarioLogadoId: number }) {
   }
 
   return (
-    <section>
+    <section className="pagina-administrativa">
       <h1>Usuários</h1>
 
       {erro && <div className="mensagem erro">{erro}</div>}

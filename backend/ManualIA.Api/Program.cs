@@ -8,6 +8,15 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
+
+if (builder.Environment.IsDevelopment())
+{
+    builder.Configuration.AddJsonFile(
+        "appsettings.Local.json", optional: true, reloadOnChange: true);
+    // No deploy, variáveis de ambiente continuam tendo prioridade sobre o arquivo local.
+    builder.Configuration.AddEnvironmentVariables();
+}
+
 var chaveJwt = builder.Configuration["Jwt:Chave"]
     ?? throw new InvalidOperationException("A chave JWT não foi configurada.");
 

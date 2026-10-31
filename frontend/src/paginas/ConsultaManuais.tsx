@@ -1,21 +1,20 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { abrirChat, listarManuais, obterManual } from '../api'
+import { abrirChat, listarManuais } from '../api'
 import type { Manual, SessaoChat } from '../tipos'
 import { ChatManual } from './ChatManual'
 
 export function ConsultaManuais() {
   const [termo, setTermo] = useState('')
   const [manuais, setManuais] = useState<Manual[]>([])
-  const [selecionado, setSelecionado] = useState<Manual | null>(null)
+  const [todosManuais, setTodosManuais] = useState<Manual[]>([])
   const [carregando, setCarregando] = useState(true)
-  const [abrindoChat, setAbrindoChat] = useState(false)
+  const [manualAbrindoChat, setManualAbrindoChat] = useState<number | null>(null)
   const [chat, setChat] = useState<SessaoChat | null>(null)
   const [erro, setErro] = useState('')
 
   async function pesquisar(termoBusca = termo) {
     setCarregando(true)
     setErro('')
-    setSelecionado(null)
 
     try {
       setManuais(await listarManuais(termoBusca))
@@ -28,7 +27,10 @@ export function ConsultaManuais() {
 
   useEffect(() => {
     listarManuais()
-      .then(setManuais)
+      .then(lista => {
+        setManuais(lista)
+        setTodosManuais(lista)
+      })
       .catch(e => setErro((e as Error).message))
       .finally(() => setCarregando(false))
   }, [])
@@ -38,35 +40,33 @@ export function ConsultaManuais() {
     void pesquisar()
   }
 
-  async function verDetalhes(id: number) {
+  async function iniciarChat(manualId: number) {
+    setManualAbrindoChat(manualId)
     setErro('')
 
     try {
-      setSelecionado(await obterManual(id))
-    } catch (e) {
-      setErro((e as Error).message)
-    }
-  }
-
-  async function iniciarChat() {
-    if (!selecionado) return
-    setAbrindoChat(true)
-    setErro('')
-
-    try {
-      setChat(await abrirChat(selecionado.id))
+      setChat(await abrirChat(manualId))
     } catch (e) {
       setErro((e as Error).message)
     } finally {
-      setAbrindoChat(false)
+      setManualAbrindoChat(null)
     }
   }
 
   if (chat)
-    return <ChatManual sessao={chat} aoFechar={() => setChat(null)} />
+    return (
+      <ChatManual
+        key={chat.id}
+        sessao={chat}
+        manuais={todosManuais}
+        manualAbrindoChat={manualAbrindoChat}
+        aoAbrirChat={iniciarChat}
+        aoFechar={() => setChat(null)}
+      />
+    )
 
   return (
-    <section>
+    <section className="pagina-consulta">
       <h1>Consultar manuais</h1>
       <p>Pesquise pelo título ou por uma palavra relacionada ao manual.</p>
 
@@ -108,53 +108,39 @@ export function ConsultaManuais() {
         </p>
       )}
 
-      <div className="lista">
+      <div className="lista grade-manuais">
         {manuais.map(manual => (
-          <article className="cartao" key={manual.id}>
-            <div className="titulo-acoes">
-              <div>
+          <article className="cartao cartao-manual" key={manual.id}>
+            <div className="cabecalho-cartao-manual">
+              <span className="icone-manual" aria-hidden="true">📖</span>
+              <div className="texto-cartao-manual">
                 <h2>{manual.titulo}</h2>
                 <p>{manual.descricao}</p>
               </div>
+            </div>
+            {manual.arquivo && (
+              <div className="arquivo arquivo-cartao-manual">
+                <span className="tipo-arquivo" aria-hidden="true">{manual.arquivo.tipo}</span>
+                <span>
+                  <strong>{manual.arquivo.nome}</strong>
+                  <span aria-hidden="true"> • </span>
+                  {manual.arquivo.quantidadeChunks} trechos disponíveis
+                </span>
+              </div>
+            )}
+            <div className="acoes-cartao-manual">
               <button
                 type="button"
-                className="secundario"
-                onClick={() => void verDetalhes(manual.id)}
+                disabled={manualAbrindoChat !== null}
+                onClick={() => void iniciarChat(manual.id)}
               >
-                Ver detalhes
+                {manualAbrindoChat === manual.id ? 'Abrindo chat...' : 'Abrir chat'}
+                <span className="icone-chat" aria-hidden="true">♥</span>
               </button>
             </div>
           </article>
         ))}
       </div>
-
-      {selecionado && (
-        <section className="cartao detalhes-manual" aria-live="polite">
-          <div className="titulo-acoes">
-            <div>
-              <h2>{selecionado.titulo}</h2>
-              <p>{selecionado.descricao}</p>
-            </div>
-            <button
-              type="button"
-              className="secundario"
-              onClick={() => setSelecionado(null)}
-            >
-              Fechar
-            </button>
-          </div>
-          {selecionado.arquivo && (
-            <p className="arquivo">
-              <strong>{selecionado.arquivo.nome}</strong> —{' '}
-              {selecionado.arquivo.tipo},{' '}
-              {selecionado.arquivo.quantidadeChunks} trechos disponíveis
-            </p>
-          )}
-          <button type="button" disabled={abrindoChat} onClick={iniciarChat}>
-            {abrindoChat ? 'Abrindo chat...' : 'Abrir chat'}
-          </button>
-        </section>
-      )}
     </section>
   )
 }

@@ -82,6 +82,18 @@ A gratuidade depende do nível do projeto e da quota disponível no Google; o c�
 Confira os [preços e modelos elegíveis](https://ai.google.dev/gemini-api/docs/pricing).
 Use documentos públicos nos testes: no nível gratuito, o conteúdo pode ser usado para melhorar produtos do Google.
 
+Para facilitar o desenvolvimento local, copie a chave para o arquivo ignorado pelo Git
+`backend/ManualIA.Api/appsettings.Local.json`:
+
+```json
+{
+  "GEMINI_API_KEY": "sua-chave"
+}
+```
+
+O arquivo é carregado somente no ambiente `Development`. Reinicie o backend depois de alterar a chave.
+No deploy, configure `GEMINI_API_KEY` como variável de ambiente; ela tem prioridade sobre o arquivo local.
+
 No PowerShell que iniciará o backend, informe a chave sem gravá-la no histórico do terminal:
 
 ```powershell

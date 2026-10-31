@@ -113,7 +113,7 @@ export function Manuais() {
   }
 
   return (
-    <section>
+    <section className="pagina-administrativa">
       <h1>Manuais</h1>
 
       {erro && <div className="mensagem erro">{erro}</div>}

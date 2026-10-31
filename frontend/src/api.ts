@@ -96,6 +96,29 @@ export const listarManuais = (termo = '') => {
 export const obterManual = (id: number) =>
   requisitar<Manual>(`/manuais/${id}`)
 
+export async function obterPdfManual(id: number) {
+  const sessao = obterSessao()
+  const headers = new Headers()
+
+  if (sessao) headers.set('Authorization', `Bearer ${sessao.token}`)
+
+  const resposta = await fetch(`${URL}/manuais/${id}/arquivo/visualizacao`, {
+    headers,
+  })
+
+  if (resposta.status === 401) limparSessao()
+  if (!resposta.ok) {
+    const erro = await resposta.json().catch(() => ({}))
+    throw new Error(
+      erro.mensagem ||
+        erro.title ||
+        'Não foi possível abrir o arquivo do manual.',
+    )
+  }
+
+  return resposta.blob()
+}
+
 export const abrirChat = (manualId: number) =>
   requisitar<SessaoChat>(`/manuais/${manualId}/chats`, {
     method: 'POST',

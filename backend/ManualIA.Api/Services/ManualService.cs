@@ -57,6 +57,32 @@ public class ManualService(
             : ResultadoServico<ManualResposta>.ComSucesso(manual);
     }
 
+    public async Task<ResultadoServico<ArquivoVisualizacao>> ObterArquivoParaVisualizacao(
+        int id, bool somenteDisponiveis = false)
+    {
+        var consulta = banco.Manuais.Where(x => x.Id == id && !x.Excluido);
+
+        if (somenteDisponiveis)
+            consulta = consulta.Where(x => x.Arquivo != null && x.Arquivo.QuantidadeChunks > 0);
+
+        var arquivo = await consulta
+            .Where(x => x.Arquivo != null)
+            .Select(x => new ArquivoVisualizacao(
+                x.Arquivo!.CaminhoArquivo,
+                x.Arquivo.NomeOriginal,
+                x.Arquivo.TipoArquivo))
+            .SingleOrDefaultAsync();
+
+        if (arquivo is null || !File.Exists(arquivo.Caminho))
+            return ResultadoServico<ArquivoVisualizacao>.ComErro(
+                "Arquivo do manual não encontrado.", 404);
+        if (!arquivo.Tipo.Equals("PDF", StringComparison.OrdinalIgnoreCase))
+            return ResultadoServico<ArquivoVisualizacao>.ComErro(
+                "A visualização na tela está disponível somente para arquivos PDF.", 415);
+
+        return ResultadoServico<ArquivoVisualizacao>.ComSucesso(arquivo);
+    }
+
     public async Task<ManualResposta> CadastrarManual(SalvarManualDto dados, int cadastradoPorId)
     {
         var manual = new Manual
@@ -214,3 +240,5 @@ public class ManualService(
             manual.Arquivo.EnviadoEm,
             manual.Arquivo.QuantidadeChunks));
 }
+
+public record ArquivoVisualizacao(string Caminho, string Nome, string Tipo);
